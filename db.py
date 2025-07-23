@@ -40,3 +40,10 @@ def remove_face(employee_id):
         with conn.cursor() as cur:
             cur.execute("DELETE FROM face_embeddings WHERE employee_id = %s", (employee_id,))
             conn.commit()
+
+def get_all_embeddings():
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT employee_id, name, embedding FROM face_embeddings")
+            rows = cur.fetchall()
+            return [(employee_id, name, embedding) for (employee_id, name, embedding) in rows]

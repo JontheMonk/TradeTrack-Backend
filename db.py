@@ -7,7 +7,6 @@ load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-
 def get_connection():
     result = urlparse(DATABASE_URL)
     return psycopg2.connect(
@@ -18,13 +17,12 @@ def get_connection():
         port=result.port
     )
 
-
 def insert_face(employee_id, name, embedding):
     with get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
-                INSERT INTO face_embeddings (employee_id, name, embedding)
+                INSERT INTO employees (employee_id, name, embedding)
                 VALUES (%s, %s, %s)
                 ON CONFLICT (employee_id) DO UPDATE
                 SET name = EXCLUDED.name,
@@ -34,16 +32,15 @@ def insert_face(employee_id, name, embedding):
             )
             conn.commit()
 
-
 def remove_face(employee_id):
     with get_connection() as conn:
         with conn.cursor() as cur:
-            cur.execute("DELETE FROM face_embeddings WHERE employee_id = %s", (employee_id,))
+            cur.execute("DELETE FROM employees WHERE employee_id = %s", (employee_id,))
             conn.commit()
 
 def get_all_embeddings():
     with get_connection() as conn:
         with conn.cursor() as cur:
-            cur.execute("SELECT employee_id, name, embedding FROM face_embeddings")
+            cur.execute("SELECT employee_id, name, embedding FROM employees")
             rows = cur.fetchall()
             return [(employee_id, name, embedding) for (employee_id, name, embedding) in rows]

@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# macOS junk
+.DS_Store
+
+# Env + secrets
+.env
+
+# Logs & temp files
+*.log
+*.sqlite3
+*.db
+*.pid
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Compiled models or large artifacts
+*.onnx
+*.mlmodel
+
+# VSCode
+.vscode/

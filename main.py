@@ -1,46 +1,62 @@
-import os
-from dotenv import load_dotenv
-from urllib.parse import urlparse
-import psycopg2
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from db import get_all_embeddings, insert_face
+import numpy as np
 
-load_dotenv()
+app = FastAPI()
 
-DATABASE_URL = os.getenv("DATABASE_URL")
 
-def get_connection():
-    result = urlparse(DATABASE_URL)
-    return psycopg2.connect(
-        dbname=result.path[1:],
-        user=result.username,
-        password=result.password,
-        host=result.hostname,
-        port=result.port
-    )
+# 🧠 Data Models
+class FaceEmbedding(BaseModel):
+    employee_id: str
+    name: str
+    embedding: list[float]
 
-def insert_face(employee_id, name, embedding):
-    with get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                """
-                INSERT INTO employees (employee_id, name, embedding)
-                VALUES (%s, %s, %s)
-                ON CONFLICT (employee_id) DO UPDATE
-                SET name = EXCLUDED.name,
-                    embedding = EXCLUDED.embedding
-                """,
-                (employee_id, name, embedding)
-            )
-            conn.commit()
+class QueryEmbedding(BaseModel):
+    embedding: list[float]
 
-def remove_face(employee_id):
-    with get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute("DELETE FROM employees WHERE employee_id = %s", (employee_id,))
-            conn.commit()
 
-def get_all_embeddings():
-    with get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute("SELECT employee_id, name, embedding FROM employees")
-            rows = cur.fetchall()
-            return [(employee_id, name, embedding) for (employee_id, name, embedding) in rows]
+# ➕ Register a new face
+@app.post("/add-face")
+def add_face(face: FaceEmbedding):
+    if len(face.embedding) != 512:
+        raise HTTPException(status_code=400, detail="Embedding must be 512 dimensions")
+    
+    try:
+        insert_face(face.employee_id, face.name, face.embedding)
+        return {"status": "success", "message": f"Face added for {face.name}"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"DB insert failed: {str(e)}")
+
+
+# 🔍 Match a face embedding to known employees
+@app.post("/match-face")
+def match_face(query: QueryEmbedding):
+    if len(query.embedding) != 512:
+        raise HTTPException(status_code=400, detail="Embedding must be 512 dimensions")
+
+    all_embeddings = get_all_embeddings()  # Expected format: list of (employee_id, name, embedding_array)
+
+    if not all_embeddings:
+        raise HTTPException(status_code=404, detail="No embeddings found in database")
+
+    query_vec = np.array(query.embedding)
+    query_vec = query_vec / np.linalg.norm(query_vec)
+
+    best_match = None
+    best_score = -1
+
+    for employee_id, name, emb in all_embeddings:
+        emb_vec = np.array(emb)
+        emb_vec = emb_vec / np.linalg.norm(emb_vec)
+
+        similarity = float(np.dot(query_vec, emb_vec))  # cosine similarity
+
+        if similarity > best_score:
+            best_score = similarity
+            best_match = {"employee_id": employee_id, "name": name, "score": similarity}
+
+    if best_score < 0.5:
+        return {"match": None, "score": best_score}
+
+    return {"match": best_match}

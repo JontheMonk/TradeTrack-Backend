@@ -63,7 +63,7 @@ def find_best_match(query_embedding: List[float], employees: List[Employee]) -> 
     best_score = -1.0
 
     for emp in employees:
-        score = cosine_similarity(query_embedding, emp.embedding)
+        score = cosine_similarity(query_vec, emp.embedding)
         if score > best_score:
             best_score = score
             best_match = MatchResult(

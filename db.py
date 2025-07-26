@@ -1,46 +1,14 @@
-import os
-from dotenv import load_dotenv
-from urllib.parse import urlparse
-import psycopg2
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
+from core.settings import settings
 
-load_dotenv()
+engine = create_engine(settings.database_url)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
 
-DATABASE_URL = os.getenv("DATABASE_URL")
-
-def get_connection():
-    result = urlparse(DATABASE_URL)
-    return psycopg2.connect(
-        dbname=result.path[1:],
-        user=result.username,
-        password=result.password,
-        host=result.hostname,
-        port=result.port
-    )
-
-def insert_face(employee_id, name, embedding):
-    with get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                """
-                INSERT INTO employees (employee_id, name, embedding)
-                VALUES (%s, %s, %s)
-                ON CONFLICT (employee_id) DO UPDATE
-                SET name = EXCLUDED.name,
-                    embedding = EXCLUDED.embedding
-                """,
-                (employee_id, name, embedding)
-            )
-            conn.commit()
-
-def remove_face(employee_id):
-    with get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute("DELETE FROM employees WHERE employee_id = %s", (employee_id,))
-            conn.commit()
-
-def get_all_embeddings():
-    with get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute("SELECT employee_id, name, embedding FROM employees")
-            rows = cur.fetchall()
-            return [(employee_id, name, embedding) for (employee_id, name, embedding) in rows]
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

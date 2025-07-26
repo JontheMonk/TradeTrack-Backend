@@ -1,31 +1,29 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 import numpy as np
-from typing import Optional
+from typing import Optional, List, Tuple
 from db import get_db
 import crud
+from models import Employee
 from schemas import FaceEmbedding, QueryEmbedding, MatchResult
 from core.operation_result import VoidResult, OperationResult
-from core.settings import FACE_MATCH_THRESHOLD
-
+from core.settings import settings
+from core.error_codes import ErrorCode
+from core.vector_utils import normalize_vector, cosine_similarity
 
 router = APIRouter()
 
-
 @router.post("/add-face")
 def add_face(face: FaceEmbedding, db: Session = Depends(get_db)):
-    # ✅ Validate embedding
     if len(face.embedding) != 512:
         raise HTTPException(status_code=400, detail="Embedding must be 512 dimensions")
 
-    vec = np.array(face.embedding)
-    norm = np.linalg.norm(vec)
-    if norm == 0:
-        raise HTTPException(status_code=400, detail="Embedding vector has zero magnitude")
+    try:
+        normalized = normalize_vector(face.embedding)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
-    # ✅ Normalize embedding
-    vec /= norm
-    face.embedding = vec.tolist()
+    face.embedding = normalized.tolist()
 
     result: VoidResult = crud.add_employee(db, face)
 
@@ -33,7 +31,6 @@ def add_face(face: FaceEmbedding, db: Session = Depends(get_db)):
         if result.code == ErrorCode.EMPLOYEE_ALREADY_EXISTS:
             raise HTTPException(status_code=409, detail=result.message)
         raise HTTPException(status_code=500, detail=result.message)
-
 
     return {"status": "success", "message": result.message}
 
@@ -49,17 +46,24 @@ def match_face(query: QueryEmbedding, db: Session = Depends(get_db)):
     if not employees:
         raise HTTPException(status_code=404, detail="No embeddings found")
 
-    query_vec = np.array(query.embedding)
-    query_vec /= np.linalg.norm(query_vec)
+    try:
+        best_match, best_score = find_best_match(query.embedding, employees)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
+    if best_score < settings.face_match_threshold:
+        raise HTTPException(status_code=404, detail="No matching face found")
+
+    return best_match
+
+
+def find_best_match(query_embedding: List[float], employees: List[Employee]) -> Tuple[Optional[MatchResult], float]:
+    query_vec = normalize_vector(query_embedding)
     best_match = None
-    best_score = -1
+    best_score = -1.0
 
     for emp in employees:
-        emb_vec = np.array(emp.embedding)
-        emb_vec /= np.linalg.norm(emb_vec)
-        score = float(np.dot(query_vec, emb_vec))
-
+        score = cosine_similarity(query_embedding, emp.embedding)
         if score > best_score:
             best_score = score
             best_match = MatchResult(
@@ -69,7 +73,4 @@ def match_face(query: QueryEmbedding, db: Session = Depends(get_db)):
                 score=score
             )
 
-    if best_score < 0.5:
-        return None
-
-    return best_match
+    return best_match, best_score

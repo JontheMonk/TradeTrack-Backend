@@ -1,5 +1,3 @@
-# services/face_match_service.py
-
 from typing import List
 from sqlalchemy.orm import Session
 import crud

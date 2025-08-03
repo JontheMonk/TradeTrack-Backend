@@ -1,12 +1,10 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from db import get_db
-import crud
 from schemas import FaceEmbedding, QueryEmbedding, MatchResult, SuccessResponse
-from core.settings import settings
 from core.errors import map_app_exception
-from core.vector_utils import normalize_vector
 from services.face_match_service import get_best_match
+from services.face_registration_service import register_face
 
 router = APIRouter()
 
@@ -14,19 +12,15 @@ router = APIRouter()
 @router.post("/add-face", response_model=SuccessResponse)
 def add_face(face: FaceEmbedding, db: Session = Depends(get_db)):
     try:
-        normalized = normalize_vector(face.embedding)
-        face.embedding = normalized.tolist()
-        crud.add_employee(db, face)
-
+        emp = register_face(face, db)
         return SuccessResponse(
-            message=f"Employee {face.name} added",
+            message=f"Employee {emp.name} added",
             data={
-                "employee_id": face.employee_id,
-                "name": face.name,
-                "role": face.role
+                "employee_id": emp.employee_id,
+                "name": emp.name,
+                "role": emp.role
             }
         )
-
     except Exception as e:
         raise map_app_exception(e)
 

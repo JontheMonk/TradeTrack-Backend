@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, Float
 from sqlalchemy.dialects.postgresql import ARRAY
-from database import Base
+from db import Base
 
 class Employee(Base):
     __tablename__ = "employees"

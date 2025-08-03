@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from db import get_db
-from schemas import FaceEmbedding, QueryEmbedding, MatchResult, SuccessResponse
+from schemas import FaceRecord, QueryEmbedding, MatchResult, SuccessResponse
 from core.errors import map_app_exception
 from services.face_match_service import get_best_match
 from services.face_registration_service import register_face
@@ -10,7 +10,7 @@ router = APIRouter()
 
 
 @router.post("/add-face", response_model=SuccessResponse)
-def add_face(face: FaceEmbedding, db: Session = Depends(get_db)):
+def add_face(face: FaceRecord, db: Session = Depends(get_db)):
     try:
         emp = register_face(face, db)
         return SuccessResponse(

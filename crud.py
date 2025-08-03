@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from models import Employee
-from schemas import FaceEmbedding
+from schemas import FaceRecord
 from typing import List
 from core.errors import (
     EmployeeAlreadyExists,
@@ -8,7 +8,7 @@ from core.errors import (
     DatabaseError
 )
 
-def add_employee(db: Session, face: FaceEmbedding) -> Employee:
+def add_employee(db: Session, face: FaceRecord) -> Employee:
     if db.query(Employee).filter(Employee.employee_id == face.employee_id).first():
         raise EmployeeAlreadyExists()
 
@@ -23,7 +23,7 @@ def add_employee(db: Session, face: FaceEmbedding) -> Employee:
 
 
 
-def update_employee(db: Session, face: FaceEmbedding) -> Employee:
+def update_employee(db: Session, face: FaceRecord) -> Employee:
     emp = db.query(Employee).filter(Employee.employee_id == face.employee_id).first()
     if not emp:
         raise EmployeeNotFound()

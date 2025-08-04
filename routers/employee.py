@@ -1,32 +1,24 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from db import get_db
-from schemas import FaceRecord, QueryEmbedding, MatchResult, SuccessResponse
+from schemas import FaceRecord, QueryEmbedding, EmployeeMatchResult, EmployeeView
 from core.errors import map_app_exception
 from services.face_match_service import get_best_match
-from services.face_registration_service import register_face
+from services.employee_registration_service import register_employee
 
 router = APIRouter()
 
 
-@router.post("/add-face", response_model=SuccessResponse)
+@router.post("/add-face", response_model=EmployeeView)
 def add_face(face: FaceRecord, db: Session = Depends(get_db)):
     try:
-        emp = register_face(face, db)
-        return SuccessResponse(
-            message=f"Employee {emp.name} added",
-            data={
-                "employee_id": emp.employee_id,
-                "name": emp.name,
-                "role": emp.role
-            }
-        )
+        return register_employee(face, db)
     except Exception as e:
         raise map_app_exception(e)
 
 
 
-@router.post("/match-face", response_model=MatchResult)
+@router.post("/match-face", response_model=EmployeeMatchResult)
 def match_face(query: QueryEmbedding, db: Session = Depends(get_db)):
     try:
         return get_best_match(query.embedding, db)

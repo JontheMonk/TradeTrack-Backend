@@ -1,6 +1,6 @@
 from .face_record import FaceRecord
 from .query_embedding import QueryEmbedding
-from .match_result import MatchResult
-from .success_response import SuccessResponse
+from .employee_match_result import EmployeeMatchResult
+from .employee_view import EmployeeView
 
-__all__ = ["FaceRecord", "QueryEmbedding", "MatchResult", "SuccessResponse"]
+__all__ = ["FaceRecord", "QueryEmbedding", "EmployeeMatchResult", "EmployeeView"]

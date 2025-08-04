@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 
-class MatchResult(BaseModel):
+class EmployeeView(BaseModel):
     employee_id: str
     name: str
     role: str
-    score: float

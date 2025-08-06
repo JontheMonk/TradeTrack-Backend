@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from db import get_db
-from schemas import FaceRecord, VerifyFaceRequest, EmployeeSearchResult
+from schemas import EmployeeInput, VerifyFaceRequest, EmployeeSearchResult
 from core.errors import map_app_exception
 from services.verify_face_service import verify_face_embedding
 from services.employee_service import register_employee, search_employees_by_prefix
@@ -10,10 +10,10 @@ from typing import List
 router = APIRouter()
 
 
-@router.post("/add-face", status_code=200)
-def add_face(face: FaceRecord, db: Session = Depends(get_db)):
+@router.post("/add-employee", status_code=200)
+def add_employee(employee: EmployeeInput, db: Session = Depends(get_db)):
     try:
-        register_employee(face, db)
+        register_employee(employee, db)
     except Exception as e:
         raise map_app_exception(e)
 

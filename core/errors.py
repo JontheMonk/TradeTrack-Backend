@@ -10,7 +10,6 @@ class ErrorCode(StrEnum):
     EMPLOYEE_NOT_FOUND = "EMPLOYEE_NOT_FOUND"
     EMPLOYEE_ALREADY_EXISTS = "EMPLOYEE_ALREADY_EXISTS"
     FACE_CONFIDENCE_TOO_LOW = "FACE_CONFIDENCE_TOO_LOW"
-    NO_EMPLOYEES_FOUND = "NO_EMPLOYEES_FOUND"
     UNKNOWN_ERROR = "UNKNOWN_ERROR"
 
 
@@ -41,12 +40,10 @@ class FaceConfidenceTooLow(AppException):
         super().__init__(message, ErrorCode.FACE_CONFIDENCE_TOO_LOW)
 
 
-class NoEmployeesException(AppException):
-    def __init__(self, message="No employees available for matching"):
-        super().__init__(message, ErrorCode.NO_EMPLOYEES_FOUND)
-
 
 def map_app_exception(exc: Exception) -> HTTPException:
+    logger.exception(f"Exception caught: {exc}")
+
     if isinstance(exc, AppException):
         return HTTPException(
             status_code=400,
@@ -56,7 +53,6 @@ def map_app_exception(exc: Exception) -> HTTPException:
             },
         )
 
-    logger.exception("Unhandled exception")
     return HTTPException(
         status_code=500,
         detail={
@@ -64,3 +60,4 @@ def map_app_exception(exc: Exception) -> HTTPException:
             "code": ErrorCode.UNKNOWN_ERROR,
         },
     )
+

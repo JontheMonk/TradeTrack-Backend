@@ -17,7 +17,7 @@ def add_employee(db: Session, face: FaceRecord) -> None:
         db.add(emp)
         db.commit()
     except Exception as e:
-        raise DatabaseError(f"Error adding employee: {str(e)}")
+        raise DatabaseError(f"Error adding employee: {str(e)}") from e
 
 
 def update_employee(db: Session, face: FaceRecord) -> None:
@@ -29,7 +29,7 @@ def update_employee(db: Session, face: FaceRecord) -> None:
         emp.role = face.role
         db.commit()
     except Exception as e:
-        raise DatabaseError(f"Error updating employee: {str(e)}")
+        raise DatabaseError(f"Error updating employee: {str(e)}") from e
 
 
 def remove_employee_by_id(db: Session, employee_id: str) -> None:
@@ -39,19 +39,20 @@ def remove_employee_by_id(db: Session, employee_id: str) -> None:
         db.delete(emp)
         db.commit()
     except Exception as e:
-        raise DatabaseError(f"Error removing employee: {str(e)}")
+        raise DatabaseError(f"Error removing employee: {str(e)}") from e
 
 
 def get_employee_by_id(db: Session, employee_id: str) -> Employee:
     try:
         emp = db.query(Employee).filter(Employee.employee_id == employee_id).first()
     except Exception as e:
-        raise DatabaseError(f"Failed to retrieve employee: {str(e)}")
+        raise DatabaseError(f"Failed to retrieve employee: {str(e)}") from e
 
     if not emp:
         raise EmployeeNotFound()
 
     return emp
+
 
 def get_employees_by_prefix(db: Session, prefix: str) -> List[Employee]:
     try:
@@ -60,6 +61,4 @@ def get_employees_by_prefix(db: Session, prefix: str) -> List[Employee]:
             (Employee.employee_id.ilike(f"{prefix}%"))
         ).all()
     except Exception as e:
-        raise DatabaseError(f"Failed to search employees by prefix: {str(e)}")
-
-
+        raise DatabaseError(f"Failed to search employees by prefix: {str(e)}") from e

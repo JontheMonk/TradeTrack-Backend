@@ -29,7 +29,7 @@ def verify_face(req: VerifyFaceRequest, db: Session = Depends(get_db)):
 
 
 @router.get("/employees", response_model=List[EmployeeSearchResult])
-def get_employees(prefix: str = Query(..., min_length=1), db: Session = Depends(get_db)):
+def get_employees(prefix: str = Query(..., min_length=3), db: Session = Depends(get_db)):
     try:
         return search_employees_by_prefix(prefix, db)
     except Exception as e:

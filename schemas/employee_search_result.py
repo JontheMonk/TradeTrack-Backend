@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-class EmployeeView(BaseModel):
+class EmployeeSearchResult(BaseModel):
     employee_id: str
     name: str
     role: str

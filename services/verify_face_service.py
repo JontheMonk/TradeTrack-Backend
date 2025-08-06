@@ -1,6 +1,5 @@
 from sqlalchemy.orm import Session
 from schemas import VerifyFaceRequest
-from models import Employee
 from core.vector_utils import cosine_similarity, normalize_vector
 from core.errors import FaceConfidenceTooLow
 from core.settings import settings

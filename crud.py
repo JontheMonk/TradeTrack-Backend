@@ -13,11 +13,12 @@ def add_employee(db: Session, employee: EmployeeInput) -> None:
     if db.query(Employee).filter(Employee.employee_id == employee.employee_id).first():
         raise EmployeeAlreadyExists()
     try:
-        emp = Employee(**employee.dict())
+        emp = Employee(**employee.model_dump())
         db.add(emp)
         db.commit()
     except Exception as e:
         raise DatabaseError(f"Error adding employee: {str(e)}") from e
+
 
 
 def update_employee(db: Session, employee: EmployeeInput) -> None:

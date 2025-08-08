@@ -1,5 +1,4 @@
 from enum import StrEnum
-from fastapi import HTTPException
 import logging
 
 logger = logging.getLogger(__name__)
@@ -40,24 +39,4 @@ class FaceConfidenceTooLow(AppException):
         super().__init__(message, ErrorCode.FACE_CONFIDENCE_TOO_LOW)
 
 
-
-def map_app_exception(exc: Exception) -> HTTPException:
-    logger.exception(f"Exception caught: {exc}")
-
-    if isinstance(exc, AppException):
-        return HTTPException(
-            status_code=400,
-            detail={
-                "message": exc.message,
-                "code": exc.code,
-            },
-        )
-
-    return HTTPException(
-        status_code=500,
-        detail={
-            "message": "Unexpected server error",
-            "code": ErrorCode.UNKNOWN_ERROR,
-        },
-    )
 

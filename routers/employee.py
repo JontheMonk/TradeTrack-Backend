@@ -9,10 +9,10 @@ from core.api_response import ApiResponse, ok
 
 router = APIRouter()
 
-@router.post("/add-employee", response_model=ApiResponse[EmployeeResult])
+@router.post("/add-employee", response_model=ApiResponse[None])
 def add_employee(employee: EmployeeInput, db: Session = Depends(get_db)):
-    emp = register_employee(employee, db)
-    return ok(emp)
+    register_employee(employee, db)
+    return ok()
 
 @router.post("/verify-face", response_model=ApiResponse[VerifyFaceResponse])
 def verify_face(req: VerifyFaceRequest, db: Session = Depends(get_db)):

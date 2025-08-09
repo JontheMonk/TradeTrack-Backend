@@ -9,19 +9,29 @@ log = logging.getLogger(__name__)
 
 def add_exception_handlers(app: FastAPI) -> None:
     @app.exception_handler(AppException)
-    async def handle_app_exc(_: Request, exc: AppException):
-        log.warning(f"Handled AppException: {exc.code} - {exc.message}")
+    async def handle_app_exc(request: Request, exc: AppException):
+        log.warning(
+            f"Handled AppException "
+            f"[status={exc.http_status}] "
+            f"{request.method} {request.url.path} "
+            f"{exc.code} - {exc.message}"
+        )
 
         if exc.__cause__:
             log.warning(
                 "Caused by:\n" +
-                "".join(traceback.format_exception(type(exc.__cause__), exc.__cause__, exc.__cause__.__traceback__))
+                "".join(traceback.format_exception(
+                    type(exc.__cause__),
+                    exc.__cause__,
+                    exc.__cause__.__traceback__
+                ))
             )
 
         return JSONResponse(
             status_code=exc.http_status,
             content=fail(exc.code, exc.message).model_dump()
         )
+
 
     @app.exception_handler(Exception)
     async def handle_unknown(_: Request, exc: Exception):

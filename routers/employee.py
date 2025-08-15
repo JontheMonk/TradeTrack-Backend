@@ -6,9 +6,6 @@ from schemas import EmployeeInput, VerifyFaceRequest, EmployeeResult
 from services.verify_face_service import verify_face_embedding
 from services.employee_service import register_employee, search_employees_by_prefix
 from core.api_response import ApiResponse, ok 
-import logging
-
-log = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -25,7 +22,4 @@ def verify_face(req: VerifyFaceRequest, db: Session = Depends(get_db)):
 @router.get("/employees", response_model=ApiResponse[List[EmployeeResult]])
 def get_employees(prefix: str = Query(..., min_length=3), db: Session = Depends(get_db)):
     results = search_employees_by_prefix(prefix, db)
-    names = [r.name for r in results][:20]
-    log.info("get_employees prefix=%r -> %d results: %s", prefix, len(results), names)
-    
     return ok(results)

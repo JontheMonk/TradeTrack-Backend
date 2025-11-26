@@ -30,7 +30,7 @@ class Settings(BaseSettings):
     Pydantic automatically performs type validation and ensures that
     invalid configuration values fail fast during application startup.
     """
-    database_url: str
+    database_url: str = "sqlite:///:memory:"  # default for tests
     face_match_threshold: float = 0.5
     embedding_dim: int = 512
 

@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from schemas import VerifyFaceRequest
 from core.vector_utils import normalize_vector, cosine_similarity
 from core.errors import FaceConfidenceTooLow
-from employee_repository import get_employee_by_id
+from data.employee_repository import get_employee_by_id
 from core.settings import settings
 
 

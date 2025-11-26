@@ -9,7 +9,7 @@ from typing import List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
-from models import Employee
+from data.models import Employee
 from core.errors import (
     EmployeeAlreadyExists,
     EmployeeNotFound,

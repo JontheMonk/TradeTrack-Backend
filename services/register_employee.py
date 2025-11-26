@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from schemas import EmployeeInput, EmployeeResult
 from core.vector_utils import normalize_vector
-import employee_repository
+import data.employee_repository as employee_repository
 
 
 def register_employee(employee: EmployeeInput, db: Session) -> EmployeeResult:
@@ -33,18 +33,34 @@ def register_employee(employee: EmployeeInput, db: Session) -> EmployeeResult:
     - The embedding is L2-normalized before storage.
     - Role defaults to ``"employee"`` if not specified.
     - Any uniqueness or integrity violations (e.g., duplicate employee_id)
-      are expected to be raised by the underlying CRUD layer.
+      are expected to be raised by the underlying repository layer.
     """
 
     # Normalize incoming embedding (critical for consistency)
     normalized = normalize_vector(employee.embedding)
 
+    # We create a *new* Pydantic model instead of mutating the incoming request.
+    #
+    # Reasons:
+    #   1. Pydantic models are designed to behave like immutable data objects.
+    #      Modifying them in place is discouraged and can bypass validation.
+    #
+    #   2. `model_copy(update=...)` guarantees that updated fields are validated
+    #      and applied atomically, producing a clean, consistent payload.
+    #
+    #   3. The original request object remains untouched, which makes debugging,
+    #      logging, and reasoning about the flow far easier.
+    #
+    #   4. If the schema evolves (new defaults, new fields), `model_copy`
+    #      automatically preserves the correct defaults without rewriting logic.
+    #
+    # In short: copy → update is the safe, Pydantic-idiomatic way to transform input.
     payload = employee.model_copy(update={
         "embedding": normalized.tolist(),
         "role": employee.role or "employee"
     })
 
-    # Persist
+    # Persist via repository layer
     emp = employee_repository.add_employee(db, payload)
 
     # Return DTO for frontend consumption

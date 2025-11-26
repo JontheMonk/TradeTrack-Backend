@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Literal
+from typing import List, Literal, Optional
 
 class EmployeeInput(BaseModel):
     """
@@ -22,12 +22,25 @@ class EmployeeInput(BaseModel):
             Must contain exactly 512 floating-point values, enforced
             via Pydantic `min_items` and `max_items`.
 
-        role (Literal["admin", "employee"]):
-            Authorization role for the employee. Determines what UI
-            actions or API calls the account can perform.
+        role (Optional[Literal["admin", "employee"]]):
+            Optional authorization role for the employee.
+
+            If omitted, the service layer automatically assigns the default role
+            ``"employee"``. The role controls which UI actions or API endpoints the
+            account may access. Admin users may perform privileged actions such as
+            registering employees or viewing analytics, while regular employees have
+            restricted permissions.
+
+            Acceptable values:
+                - "admin"
+                - "employee"
+
+            When ``None`` is provided, no validation error is raised; the service
+            will apply the default role.
+
     """
 
     employee_id: str
     name: str
     embedding: List[float] = Field(..., min_items=512, max_items=512)
-    role: Literal["admin", "employee"]
+    role: Optional[Literal["admin", "employee"]] = None

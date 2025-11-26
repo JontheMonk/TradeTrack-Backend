@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from typing import List
 
-from database import get_session
+from data.database import get_session
 from schemas import EmployeeInput, VerifyFaceRequest, EmployeeResult
 from services.verify_face import verify_face_embedding
 from services.register_employee import register_employee

@@ -1,7 +1,7 @@
 from typing import List
 from sqlalchemy.orm import Session
 from schemas import EmployeeResult
-import employee_repository
+import data.employee_repository as employee_repository
 
 
 def search_employees_by_prefix(prefix: str, db: Session) -> List[EmployeeResult]:

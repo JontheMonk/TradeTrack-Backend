@@ -22,7 +22,7 @@ from sqlalchemy import (
     func
 )
 from sqlalchemy.dialects.postgresql import ARRAY
-from database import Base
+from data.database import Base
 
 
 class Employee(Base):

@@ -27,8 +27,6 @@ class VerifyFaceRequest(BaseModel):
     """
 
     employee_id: str
-    embedding: List[float] = Field(
-        ..., 
-        min_items=settings.embedding_dim,
-        max_items=settings.embedding_dim
-    )
+    embedding: List[float] = Field(..., min_length=settings.embedding_dim,
+                               max_length=settings.embedding_dim)
+

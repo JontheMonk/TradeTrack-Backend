@@ -42,5 +42,5 @@ class EmployeeInput(BaseModel):
 
     employee_id: str
     name: str
-    embedding: List[float] = Field(..., min_items=512, max_items=512)
+    embedding: List[float] = Field(..., min_length=512, max_length=512)
     role: Optional[Literal["admin", "employee"]] = None

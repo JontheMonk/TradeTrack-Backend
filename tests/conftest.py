@@ -1,32 +1,73 @@
-import sys
-import os
+# tests/conftest.py
 
-# Add project root to Python path
-root = os.path.dirname(os.path.dirname(__file__))
-sys.path.append(root)
+import pytest
+from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 
-"""
-Test environment bootstrapper.
+from data.models import Base
+from data.database import get_session
+from main import app
 
-Pytest does not automatically include the project root directory
-(TradeTrack-Backend/) in Python's import search path. As a result,
-imports such as:
 
-    from core.vector_utils import normalize_vector
+@pytest.fixture(scope="session")
+def test_engine():
+    """
+    Shared in-memory SQLite engine backed by StaticPool so ALL tests and ALL
+    FastAPI requests see the SAME database (tables included).
+    """
+    engine = create_engine(
+        "sqlite://",
+        future=True,
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    Base.metadata.create_all(engine)
+    return engine
 
-would fail with:
-    ModuleNotFoundError: No module named 'core'
 
-This file ensures that tests can import the application's packages
-(`core`, `services`, `routers`, etc.) exactly the same way the
-application can when running via uvicorn. It works by:
+@pytest.fixture()
+def db_session(test_engine):
+    """
+    Fresh DB state for every test.
 
-    1. Determining the project root directory based on the location of
-       this file (tests/conftest.py lives inside the tests/ folder).
+    Even though we reuse the same engine (fast),
+    we DROP and CREATE all tables before each test
+    so no state leaks between tests.
+    """
 
-    2. Appending that root path to sys.path so Python treats it as an
-       importable module location.
+    # Wipe all tables to remove rows from previous tests
+    Base.metadata.drop_all(test_engine)
+    Base.metadata.create_all(test_engine)
 
-This enables consistent import behavior during tests without requiring
-installation of the package via pip or modifying PYTHONPATH externally.
-"""
+    # Brand-new session for this test
+    SessionLocal = sessionmaker(
+        autocommit=False,
+        autoflush=False,
+        bind=test_engine
+    )
+
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+
+@pytest.fixture()
+def client(db_session):
+    """
+    FastAPI TestClient that uses the SQLite in-memory test DB.
+    """
+
+    def override_get_session():
+        try:
+            yield db_session
+        finally:
+            pass
+
+    app.dependency_overrides[get_session] = override_get_session
+
+    return TestClient(app)

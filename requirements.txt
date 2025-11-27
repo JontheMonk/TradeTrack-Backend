@@ -5,3 +5,4 @@ psycopg2-binary
 pydantic-settings>=2.0
 python-dotenv
 numpy
+httpx>=0.24.0

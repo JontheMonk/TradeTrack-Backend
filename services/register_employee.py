@@ -58,7 +58,7 @@ def register_employee(employee: EmployeeInput, db: Session) -> EmployeeResult:
     payload = employee.model_copy(update={
         "embedding": normalized.tolist(),
         "role": employee.role or "employee"
-    })
+    }).model_dump()
 
     # Persist via repository layer
     emp = employee_repository.add_employee(db, payload)

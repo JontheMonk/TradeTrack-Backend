@@ -17,7 +17,6 @@ from services.search_employees import search_employees_by_prefix
 from core.api_response import ApiResponse, ok
 
 router = APIRouter(
-    prefix="/employees",
     tags=["Employees"],
 )
 

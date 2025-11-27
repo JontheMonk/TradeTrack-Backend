@@ -13,7 +13,7 @@ def test_register_employee_normalizes_and_defaults_role(monkeypatch):
     db = MagicMock()
 
     # Input embedding (not normalized)
-    raw_embedding = [0.0] * 511 + [5.0]   # length = 512, norm ≈ 5
+    raw_embedding = [0.0] * 511 + [5.0]   # norm ≈ 5
     employee_input = EmployeeInput(
         employee_id="123",
         name="Jon",
@@ -28,8 +28,7 @@ def test_register_employee_normalizes_and_defaults_role(monkeypatch):
     mock_emp.role = "employee"
 
     # Mock the repository function
-    def mock_add_employee(db_session, payload):
-        # Capture payload for assertions
+    def mock_add_employee(db_session, payload: dict):
         mock_add_employee.captured_payload = payload
         return mock_emp
 
@@ -55,11 +54,15 @@ def test_register_employee_normalizes_and_defaults_role(monkeypatch):
 
     # 3. Embedding was normalized before being passed to repo
     payload = mock_add_employee.captured_payload
-    norm = np.linalg.norm(payload.embedding)
+
+    assert isinstance(payload, dict), "Service must pass a dict to repo"
+
+    embedding = payload["embedding"]
+    norm = np.linalg.norm(embedding)
     assert pytest.approx(norm) == 1.0
 
     # 4. Role was defaulted
-    assert payload.role == "employee"
+    assert payload["role"] == "employee"
 
     # 5. Original object was NOT mutated
     assert employee_input.embedding == raw_embedding

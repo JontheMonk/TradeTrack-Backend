@@ -123,9 +123,7 @@ def make_client(test_engine):
         app = create_app(
             settings=settings,
             engine=test_engine,
-            # Wrap dependency in a lambda because create_app expects
-            # a “maker” function: (engine) -> get_session()
-            get_session_maker=make_test_get_session(test_engine),
+            get_session_maker=make_test_get_session,
         )
 
         return TestClient(app)

@@ -19,7 +19,7 @@ class Settings:
     embedding_dim: int = 512
 
     # Security
-    admin_api_key: str | None = None
+    admin_api_key: str = "dev-key"
     
     #Environment
     env : str = "dev"

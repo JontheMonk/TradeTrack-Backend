@@ -16,6 +16,7 @@ class ErrorCode(StrEnum):
     EMPLOYEE_NOT_FOUND = "EMPLOYEE_NOT_FOUND"
     EMPLOYEE_ALREADY_EXISTS = "EMPLOYEE_ALREADY_EXISTS"
     FACE_CONFIDENCE_TOO_LOW = "FACE_CONFIDENCE_TOO_LOW"
+    UNAUTHORIZED = "UNAUTHORIZED"
     UNKNOWN_ERROR = "UNKNOWN_ERROR"
 
 
@@ -102,7 +103,7 @@ class Unauthorized(AppException):
     http_status = status.HTTP_401_UNAUTHORIZED
 
     def __init__(self, message="Unauthorized"):
-        super().__init__(message, ErrorCode.UNKNOWN_ERROR)
+        super().__init__(message, ErrorCode.UNAUTHORIZED)
 
 class ServerMisconfigured(AppException):
     """

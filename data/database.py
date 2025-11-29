@@ -21,7 +21,7 @@ def build_session_dependency(engine: Engine):
         bind=engine,
     )
 
-    def get_session():
+    def get_session(_=None):
         db = SessionLocal()
         try:
             yield db

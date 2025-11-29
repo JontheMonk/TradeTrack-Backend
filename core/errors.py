@@ -16,6 +16,7 @@ class ErrorCode(StrEnum):
     EMPLOYEE_NOT_FOUND = "EMPLOYEE_NOT_FOUND"
     EMPLOYEE_ALREADY_EXISTS = "EMPLOYEE_ALREADY_EXISTS"
     FACE_CONFIDENCE_TOO_LOW = "FACE_CONFIDENCE_TOO_LOW"
+    UNAUTHORIZED = "UNAUTHORIZED"
     UNKNOWN_ERROR = "UNKNOWN_ERROR"
 
 
@@ -92,3 +93,28 @@ class FaceConfidenceTooLow(AppException):
 
     def __init__(self, message="Face match confidence too low"):
         super().__init__(message, ErrorCode.FACE_CONFIDENCE_TOO_LOW)
+
+class Unauthorized(AppException):
+    """
+    Raised when a client provides no admin key or an invalid admin key.
+
+    Corresponds to HTTP 401 Unauthorized.
+    """
+    http_status = status.HTTP_401_UNAUTHORIZED
+
+    def __init__(self, message="Unauthorized"):
+        super().__init__(message, ErrorCode.UNAUTHORIZED)
+
+class ServerMisconfigured(AppException):
+    """
+    Raised when the server itself is misconfigured (e.g., missing secrets,
+    missing env vars). This is a server error, not the client's fault.
+
+    Corresponds to HTTP 500.
+    """
+    http_status = status.HTTP_500_INTERNAL_SERVER_ERROR
+
+    def __init__(self, message="Server misconfigured"):
+        super().__init__(message, ErrorCode.UNKNOWN_ERROR)
+
+

@@ -16,17 +16,21 @@ from core.errors import (
 
 @pytest.fixture()
 def db():
-    """Create a fresh in-memory SQLite DB for each test."""
-    engine = create_engine("sqlite:///:memory:", future=True)
-    TestingSessionLocal = sessionmaker(bind=engine, autoflush=False)
-
+    engine = create_engine(
+        "sqlite:///:memory:",
+        connect_args={"check_same_thread": False},
+        future=True,
+    )
     Base.metadata.create_all(engine)
 
-    session = TestingSessionLocal()
+    SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+    session = SessionLocal()
+
     try:
         yield session
     finally:
         session.close()
+
 
 
 def make_emp(employee_id="abc123", name="Alice", role="employee", embedding=None):

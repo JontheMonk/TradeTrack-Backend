@@ -12,6 +12,7 @@ from typing import List
 from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy.orm import Session
 from slowapi import Limiter
+from structlog import get_logger
 
 from core.api_response import ApiResponse, ok
 from core.settings import Settings
@@ -19,6 +20,9 @@ from schemas import EmployeeInput, VerifyFaceRequest, EmployeeResult
 from services.verify_face import verify_face_embedding
 from services.register_employee import register_employee
 from services.search_employees import search_employees_by_prefix
+
+
+log = get_logger()
 
 
 def create_employee_router(
@@ -55,7 +59,19 @@ def create_employee_router(
         Register a new employee with normalized face embedding.
         Requires a valid X-Admin-Key header.
         """
+        log.info(
+            "employee_register_request",
+            employee_id=employee.employee_id,
+            role=employee.role,
+        )
+
         register_employee(employee, db)
+
+        log.info(
+            "employee_registered",
+            employee_id=employee.employee_id,
+        )
+
         return ok()
 
     # ------------------------------------------------------------------
@@ -66,13 +82,24 @@ def create_employee_router(
     def verify_face(
         request: Request,  # required for SlowAPI
         req: VerifyFaceRequest,
-        db: Session = Depends(get_session)
+        db: Session = Depends(get_session),
     ):
         """
         Verify a submitted face embedding against the stored employee embedding.
         Public endpoint, protected by rate limiting.
         """
+        log.info(
+            "face_verification_request",
+            employee_id=req.employee_id,
+        )
+
         verify_face_embedding(req, db, settings=settings)
+
+        log.info(
+            "face_verification_success",
+            employee_id=req.employee_id,
+        )
+
         return ok()
 
     # ------------------------------------------------------------------
@@ -88,7 +115,19 @@ def create_employee_router(
         """
         Search for employees whose name or ID begins with a given prefix.
         """
+        log.info(
+            "employee_search_request",
+            prefix=prefix,
+        )
+
         results = search_employees_by_prefix(prefix, db)
+
+        log.info(
+            "employee_search_results",
+            prefix=prefix,
+            count=len(results),
+        )
+
         return ok(results)
 
     return router

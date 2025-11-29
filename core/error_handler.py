@@ -1,90 +1,93 @@
-import logging
+# core/error_handler.py
+
+import structlog
 import traceback
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
+
 from core.errors import AppException, ErrorCode
 from core.api_response import fail
 
-log = logging.getLogger(__name__)
+log = structlog.get_logger()
+
 
 def add_exception_handlers(app: FastAPI) -> None:
     """
     Register global exception handlers for the FastAPI application.
 
-    This attaches:
-      • A handler for AppException — your controlled, domain-level errors.
-      • A fallback handler for all other Exceptions — unexpected failures.
+    Provides:
+      • Structured handler for AppException (expected domain errors)
+      • Catch-all structured handler for unexpected failures
 
-    The goal is to ensure all errors return a consistent JSON envelope
-    and that logs contain enough data to debug failures quickly.
+    All logs are emitted through structlog so they become JSON in production
+    and pretty in development.
     """
 
     @app.exception_handler(AppException)
     async def handle_app_exc(request: Request, exc: AppException):
         """
-        Handle known application-level exceptions.
+        Handle expected, domain-level application errors.
 
-        These represent expected, validated failure states such as:
-        - Face confidence too low
+        Examples:
         - Employee not found
-        - Duplicate registration
-
-        Logs a warning including:
-          • HTTP method + path
-          • App-specific error code
-          • Message
-          • HTTP status
-
-        If the exception was raised with a cause (via "raise X from Y"),
-        the full traceback of the original cause is logged as well.
+        - Duplicate employee ID
+        - Face confidence too low
         """
+
         log.warning(
-            f"Handled AppException "
-            f"[status={exc.http_status}] "
-            f"{request.method} {request.url.path} "
-            f"{exc.code} - {exc.message}"
+            "app_exception",
+            path=request.url.path,
+            method=request.method,
+            status=exc.http_status,
+            code=str(exc.code),
+            message=exc.message,
         )
 
-        # Log the original cause if chained (e.g., raise A from B)
+        # If chained exception exists, log the traceback of the cause
         if exc.__cause__:
             log.warning(
-                "Caused by:\n" +
-                "".join(traceback.format_exception(
-                    type(exc.__cause__),
-                    exc.__cause__,
-                    exc.__cause__.__traceback__
-                ))
+                "app_exception_cause",
+                cause="".join(
+                    traceback.format_exception(
+                        type(exc.__cause__),
+                        exc.__cause__,
+                        exc.__cause__.__traceback__,
+                    )
+                ),
             )
 
-        # Return standardized failure envelope
         return JSONResponse(
             status_code=exc.http_status,
-            content=fail(exc.code, exc.message).model_dump()
+            content=fail(exc.code, exc.message).model_dump(),
         )
 
     @app.exception_handler(Exception)
     async def handle_unknown(request: Request, exc: Exception):
         """
-        Catch-all handler for unexpected exceptions.
+        Handle unexpected runtime errors.
 
-        These represent bugs or infrastructure issues, not domain errors.
-        - Database connection failures
-        - Buggy logic
-        - Unhandled edge cases
-        - Bad imports, indexing errors, etc.
-
-        Logs the full traceback and returns a generic 500 error with a
-        consistent failure response format.
+        These include:
+        - bugs in code paths
+        - broken dependencies
+        - DB connection failures
         """
-        log.exception(
-            f"Unhandled exception during {request.method} {request.url.path}",
-            exc_info=exc
+
+        log.error(
+            "unhandled_exception",
+            path=request.url.path,
+            method=request.method,
+            error=str(exc),
+            traceback="".join(
+                traceback.format_exception(
+                    type(exc), exc, exc.__traceback__
+                )
+            ),
         )
 
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content=fail(
                 ErrorCode.UNKNOWN_ERROR,
-                "Unexpected server error"
-            ).model_dump()
+                "Unexpected server error",
+            ).model_dump(),
         )

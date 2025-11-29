@@ -1,8 +1,5 @@
 from enum import StrEnum
 from fastapi import status
-import logging
-
-logger = logging.getLogger(__name__)
 
 class ErrorCode(StrEnum):
     """

@@ -8,6 +8,7 @@ All higher-level business logic belongs in the service layer.
 from typing import List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
+import structlog
 
 from data.models import Employee
 from core.errors import (
@@ -16,6 +17,7 @@ from core.errors import (
     DatabaseError,
 )
 
+log = structlog.get_logger()
 
 # ---------------------------------------------------------------------------
 # CREATE
@@ -24,26 +26,6 @@ from core.errors import (
 def add_employee(db: Session, payload: dict) -> Employee:
     """
     Insert a new Employee row into the database.
-
-    Parameters
-    ----------
-    db : Session
-        Active SQLAlchemy session.
-    payload : dict
-        Dictionary containing the validated fields for the Employee model.
-        Expected keys: employee_id, name, embedding, role.
-
-    Returns
-    -------
-    Employee
-        The newly created employee model instance.
-
-    Raises
-    ------
-    EmployeeAlreadyExists
-        If a duplicate primary key (employee_id) is inserted.
-    DatabaseError
-        For any unexpected DB failure.
     """
     emp = Employee(**payload)
     db.add(emp)
@@ -51,12 +33,29 @@ def add_employee(db: Session, payload: dict) -> Employee:
     try:
         db.commit()
         db.refresh(emp)
+
+        log.debug(
+            "repo_add_employee_success",
+            employee_id=emp.employee_id,
+        )
+
         return emp
+
     except IntegrityError as e:
         db.rollback()
+        log.warning(
+            "repo_add_employee_duplicate",
+            employee_id=payload.get("employee_id"),
+        )
         raise EmployeeAlreadyExists() from e
+
     except Exception as e:
         db.rollback()
+        log.error(
+            "repo_add_employee_unhandled_error",
+            employee_id=payload.get("employee_id"),
+            error=str(e),
+        )
         raise DatabaseError(f"Error adding employee: {e}") from e
 
 
@@ -67,13 +66,6 @@ def add_employee(db: Session, payload: dict) -> Employee:
 def get_employee_by_id(db: Session, employee_id: str) -> Employee:
     """
     Retrieve a single employee by ID.
-
-    Raises
-    ------
-    EmployeeNotFound
-        If the employee does not exist.
-    DatabaseError
-        For unexpected DB lookup failures.
     """
     try:
         emp = (
@@ -82,9 +74,18 @@ def get_employee_by_id(db: Session, employee_id: str) -> Employee:
             .first()
         )
     except Exception as e:
+        log.error(
+            "repo_get_employee_db_error",
+            employee_id=employee_id,
+            error=str(e),
+        )
         raise DatabaseError(f"Failed to retrieve employee: {e}") from e
 
     if not emp:
+        log.info(
+            "repo_employee_not_found",
+            employee_id=employee_id,
+        )
         raise EmployeeNotFound()
 
     return emp
@@ -95,7 +96,7 @@ def get_employees_by_prefix(db: Session, prefix: str) -> List[Employee]:
     Prefix-based search on employee_id or name.
     """
     try:
-        return (
+        employees = (
             db.query(Employee)
             .filter(
                 (Employee.name.ilike(f"{prefix}%"))
@@ -103,7 +104,21 @@ def get_employees_by_prefix(db: Session, prefix: str) -> List[Employee]:
             )
             .all()
         )
+
+        if not employees:
+            log.debug(
+                "repo_search_no_results",
+                prefix=prefix,
+            )
+
+        return employees
+
     except Exception as e:
+        log.error(
+            "repo_prefix_search_error",
+            prefix=prefix,
+            error=str(e),
+        )
         raise DatabaseError(f"Failed to search employees by prefix: {e}") from e
 
 
@@ -121,29 +136,6 @@ def update_employee(
 ) -> Employee:
     """
     Update a subset of fields for an employee.
-
-    Parameters
-    ----------
-    employee_id : str
-        ID of the employee.
-    name : Optional[str]
-        New name, if updating.
-    role : Optional[str]
-        New role ("employee" or "admin"), if updating.
-    embedding : Optional[list]
-        New 512-dim embedding, if updating.
-
-    Returns
-    -------
-    Employee
-        The updated employee instance.
-
-    Raises
-    ------
-    EmployeeNotFound
-        If the employee doesn't exist.
-    DatabaseError
-        For unexpected DB errors.
     """
     emp = get_employee_by_id(db, employee_id)
 
@@ -157,9 +149,21 @@ def update_employee(
 
         db.commit()
         db.refresh(emp)
+
+        log.debug(
+            "repo_update_employee_success",
+            employee_id=employee_id,
+        )
+
         return emp
+
     except Exception as e:
         db.rollback()
+        log.error(
+            "repo_update_employee_error",
+            employee_id=employee_id,
+            error=str(e),
+        )
         raise DatabaseError(f"Error updating employee: {e}") from e
 
 
@@ -176,6 +180,17 @@ def remove_employee_by_id(db: Session, employee_id: str) -> None:
     try:
         db.delete(emp)
         db.commit()
+
+        log.debug(
+            "repo_delete_employee_success",
+            employee_id=employee_id,
+        )
+
     except Exception as e:
         db.rollback()
+        log.error(
+            "repo_delete_employee_error",
+            employee_id=employee_id,
+            error=str(e),
+        )
         raise DatabaseError(f"Error removing employee: {e}") from e

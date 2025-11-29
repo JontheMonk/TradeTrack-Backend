@@ -238,3 +238,19 @@ def test_verify_face_invalid_embedding_length(make_client):
     body = response.json()
     assert body["success"] is False
 
+
+def test_rate_limiter_and_middleware_attached(make_client):
+    client = make_client()
+
+    app = client.app
+
+    # 1. Limiter instance exists
+    assert hasattr(app.state, "limiter")
+    from slowapi import Limiter
+    assert isinstance(app.state.limiter, Limiter)
+
+    # 2. SlowAPIMiddleware is present
+    from slowapi.middleware import SlowAPIMiddleware
+    assert any(isinstance(m.cls, type(SlowAPIMiddleware)) for m in app.user_middleware)
+
+

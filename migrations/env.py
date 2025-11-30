@@ -12,7 +12,6 @@ config = context.config
 # Interpret the config file for Python logging.
 fileConfig(config.config_file_name)
 
-# --- Inject your DB URL from settings.py ---
 config.set_main_option("sqlalchemy.url", settings.database_url)
 
 # This is the metadata Alembic will scan for changes

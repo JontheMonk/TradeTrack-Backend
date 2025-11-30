@@ -8,12 +8,6 @@ This file sets up:
     • A dependency-injected get_session for FastAPI
     • A make_client() fixture that produces a fresh TestClient per test
 
-This approach avoids:
-    • File-backed SQLite (slow, persistent)
-    • SQLite connection issues (solved by StaticPool)
-    • Transaction rollbacks (incompatible with FastAPI)
-    • Table-loss between requests (StaticPool ensures a single connection)
-
 API tests simulate full HTTP requests, so each test receives:
     • a clean database schema
     • a new FastAPI app

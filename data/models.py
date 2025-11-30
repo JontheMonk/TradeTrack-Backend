@@ -5,14 +5,6 @@ This module defines:
     • The single shared declarative Base used by all ORM models.
     • The Employee model representing user identity + face embeddings.
 
-Why Base lives here:
---------------------
-The declarative Base **must** live in the models module because:
-    1. All ORM model classes must inherit from the same Base object.
-    2. Tests and the production app must share identical metadata.
-    3. Alembic and future migrations depend on Base being globally consistent.
-    4. Prevents circular imports between database.py ↔ models.py.
-
 Every table created by SQLAlchemy comes from Base.metadata.
 """
 
@@ -61,13 +53,13 @@ class Employee(Base):
     __tablename__ = "employees"
 
     employee_id = Column(
-        String,
+        String(128),
         primary_key=True,
         doc="Unique employee identifier used across the system."
     )
 
     name = Column(
-        String,
+        String(256),
         nullable=False,
         doc="Human-readable display name."
     )
@@ -79,7 +71,7 @@ class Employee(Base):
     )
 
     role = Column(
-        String,
+        String(32),
         nullable=False,
         default="employee",
         doc="Access role (`admin` or `employee`)."

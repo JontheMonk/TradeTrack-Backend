@@ -1,44 +1,47 @@
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config, pool
+from sqlalchemy import create_engine
 from alembic import context
 
 from core.settings import settings
 from data.models import Base
 
-# This config object provides access to values within alembic.ini.
+# ---------------------------------------------------------
+# Alembic Config + Logging
+# ---------------------------------------------------------
 config = context.config
-
-# Interpret the config file for Python logging.
 fileConfig(config.config_file_name)
 
-config.set_main_option("sqlalchemy.url", settings.database_url)
-
-# This is the metadata Alembic will scan for changes
+# Metadata for autogenerate
 target_metadata = Base.metadata
 
 
+# ---------------------------------------------------------
+# OFFLINE MODE
+# ---------------------------------------------------------
 def run_migrations_offline():
-    """Run migrations in 'offline' mode."""
-    url = config.get_main_option("sqlalchemy.url")
+    """Run migrations without a live DB connection."""
+    url = settings.database_url
+
     context.configure(
         url=url,
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        compare_type=True,
+        compare_server_default=True,
     )
 
     with context.begin_transaction():
         context.run_migrations()
 
 
+# ---------------------------------------------------------
+# ONLINE MODE
+# ---------------------------------------------------------
 def run_migrations_online():
-    """Run migrations in 'online' mode."""
-    connectable = engine_from_config(
-        config.get_section(config.config_ini_section),
-        prefix="sqlalchemy.",
-        poolclass=pool.NullPool,
-    )
+    """Run migrations with an active DB engine."""
+    connectable = create_engine(settings.database_url, pool_pre_ping=True)
 
     with connectable.connect() as connection:
         context.configure(
@@ -52,6 +55,9 @@ def run_migrations_online():
             context.run_migrations()
 
 
+# ---------------------------------------------------------
+# ENTRYPOINT
+# ---------------------------------------------------------
 if context.is_offline_mode():
     run_migrations_offline()
 else:

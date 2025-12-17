@@ -13,6 +13,8 @@ from core.logging import init_logging
 from core.request_id import RequestIDMiddleware
 from data.database import make_get_session
 from routers.employee import create_employee_router
+from routers.health import router as health_router
+
 
 
 def create_app(
@@ -136,6 +138,8 @@ def create_app(
     )
 
     app.include_router(employee_router, prefix="/employees")
+
+    app.include_router(health_router)
 
     return app
 

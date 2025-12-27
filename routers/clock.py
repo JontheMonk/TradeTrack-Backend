@@ -24,57 +24,51 @@ def create_clock_router(
     limiter: Limiter,
     get_session,
 ) -> APIRouter:
-    """
-    Build a fresh APIRouter for clock endpoints, wired to:
-
-        • limiter     – SlowAPI limiter instance
-        • get_session – FastAPI DB dependency
-
-    These endpoints are public (no admin key) but rate-limited.
-    """
     router = APIRouter(tags=["Clock"])
 
     # ------------------------------------------------------------------
     # POST /clock/{employee_id}/in  → Clock in
     # ------------------------------------------------------------------
-    @router.post("/{employee_id}/in", response_model=ApiResponse[None])
+    @router.post("/{employee_id}/in", response_model=ApiResponse[ClockStatus])
     @limiter.limit("10/minute")
     def do_clock_in(
         request: Request,
         employee_id: str = Path(..., min_length=1),
         db: Session = Depends(get_session),
     ):
-        """
-        Clock in an employee. Fails if already clocked in.
-        """
+        """Clock in an employee. Returns the new clock status."""
         log.info("clock_in_request", employee_id=employee_id)
 
-        clock_in(employee_id, db)
+        entry = clock_in(employee_id, db)
 
         log.info("clock_in_complete", employee_id=employee_id)
 
-        return ok()
+        return ok(ClockStatus(
+            is_clocked_in=True,
+            clock_in_time=entry.clock_in
+        ))
 
     # ------------------------------------------------------------------
     # POST /clock/{employee_id}/out  → Clock out
     # ------------------------------------------------------------------
-    @router.post("/{employee_id}/out", response_model=ApiResponse[None])
+    @router.post("/{employee_id}/out", response_model=ApiResponse[ClockStatus])
     @limiter.limit("10/minute")
     def do_clock_out(
         request: Request,
         employee_id: str = Path(..., min_length=1),
         db: Session = Depends(get_session),
     ):
-        """
-        Clock out an employee. Fails if not clocked in.
-        """
+        """Clock out an employee. Returns the updated clock status."""
         log.info("clock_out_request", employee_id=employee_id)
 
         clock_out(employee_id, db)
 
         log.info("clock_out_complete", employee_id=employee_id)
 
-        return ok()
+        return ok(ClockStatus(
+            is_clocked_in=False,
+            clock_in_time=None
+        ))
 
     # ------------------------------------------------------------------
     # GET /clock/{employee_id}/status  → Check clock status
@@ -86,9 +80,7 @@ def create_clock_router(
         employee_id: str = Path(..., min_length=1),
         db: Session = Depends(get_session),
     ):
-        """
-        Check if an employee is currently clocked in.
-        """
+        """Check if an employee is currently clocked in."""
         log.info("clock_status_request", employee_id=employee_id)
 
         status = get_clock_status(employee_id, db)

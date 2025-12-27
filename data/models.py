@@ -13,8 +13,10 @@ from sqlalchemy import (
     Column,
     String,
     Float,
+    Integer,
     DateTime,
     CheckConstraint,
+    ForeignKey,
     JSON,
     func,
 )
@@ -98,3 +100,11 @@ class Employee(Base):
             name="employees_role_check"
         ),
     )
+
+class TimeEntry(Base):
+    __tablename__ = "time_entries"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    employee_id = Column(String(128), ForeignKey("employees.employee_id"), nullable=False)
+    clock_in = Column(DateTime, nullable=False, server_default=func.now())
+    clock_out = Column(DateTime, nullable=True)

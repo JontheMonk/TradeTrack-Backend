@@ -7,11 +7,6 @@ These tests rely on:
     • make_client() from tests/conftest.py
     • a fully isolated database per test
     • realistic HTTP requests executed via TestClient
-
-Each test:
-    • gets a fresh FastAPI app
-    • gets a clean DB schema
-    • performs real API operations
 """
 
 
@@ -39,7 +34,8 @@ def test_clock_in_success(make_client):
     assert response.status_code == 200
     body = response.json()
     assert body["success"] is True
-    assert body["data"] is None
+    assert body["data"]["is_clocked_in"] is True
+    assert body["data"]["clock_in_time"] is not None
 
 
 def test_clock_in_already_clocked_in_returns_409(make_client):
@@ -75,7 +71,8 @@ def test_clock_out_success(make_client):
     assert response.status_code == 200
     body = response.json()
     assert body["success"] is True
-    assert body["data"] is None
+    assert body["data"]["is_clocked_in"] is False
+    assert body["data"]["clock_in_time"] is None
 
 
 def test_clock_out_not_clocked_in_returns_400(make_client):
@@ -138,18 +135,19 @@ def test_full_clock_in_out_cycle(make_client):
     status1 = client.get("/clock/emp7/status").json()
     assert status1["data"]["is_clocked_in"] is False
 
-    # 2. Clock in
-    clock_in = client.post("/clock/emp7/in")
-    assert clock_in.status_code == 200
+    # 2. Clock in — returns status
+    clock_in_resp = client.post("/clock/emp7/in").json()
+    assert clock_in_resp["data"]["is_clocked_in"] is True
+    assert clock_in_resp["data"]["clock_in_time"] is not None
 
-    # 3. Now clocked in
+    # 3. Verify status matches
     status2 = client.get("/clock/emp7/status").json()
     assert status2["data"]["is_clocked_in"] is True
 
-    # 4. Clock out
-    clock_out = client.post("/clock/emp7/out")
-    assert clock_out.status_code == 200
+    # 4. Clock out — returns status
+    clock_out_resp = client.post("/clock/emp7/out").json()
+    assert clock_out_resp["data"]["is_clocked_in"] is False
 
-    # 5. No longer clocked in
+    # 5. Verify status matches
     status3 = client.get("/clock/emp7/status").json()
     assert status3["data"]["is_clocked_in"] is False

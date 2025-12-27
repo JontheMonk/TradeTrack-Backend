@@ -15,7 +15,8 @@ class ErrorCode(StrEnum):
     FACE_CONFIDENCE_TOO_LOW = "FACE_CONFIDENCE_TOO_LOW"
     UNAUTHORIZED = "UNAUTHORIZED"
     UNKNOWN_ERROR = "UNKNOWN_ERROR"
-
+    ALREADY_CLOCKED_IN = "ALREADY_CLOCKED_IN"
+    NOT_CLOCKED_IN = "NOT_CLOCKED_IN"
 
 class AppException(Exception):
     """
@@ -113,5 +114,25 @@ class ServerMisconfigured(AppException):
 
     def __init__(self, message="Server misconfigured"):
         super().__init__(message, ErrorCode.UNKNOWN_ERROR)
+
+
+class AlreadyClockedIn(AppException):
+    """
+    Raised when attempting to clock in while already clocked in.
+    """
+    http_status = status.HTTP_409_CONFLICT
+
+    def __init__(self, message="Already clocked in"):
+        super().__init__(message, ErrorCode.ALREADY_CLOCKED_IN)
+
+
+class NotClockedIn(AppException):
+    """
+    Raised when attempting to clock out without an active clock-in.
+    """
+    http_status = status.HTTP_400_BAD_REQUEST
+
+    def __init__(self, message="Not clocked in"):
+        super().__init__(message, ErrorCode.NOT_CLOCKED_IN)
 
 

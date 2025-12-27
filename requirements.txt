@@ -23,3 +23,6 @@ slowapi==0.1.8
 
 # Logging
 structlog
+
+# Testing
+pytest

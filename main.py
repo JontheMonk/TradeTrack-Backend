@@ -14,6 +14,7 @@ from core.request_id import RequestIDMiddleware
 from data.database import make_get_session
 from routers.employee import create_employee_router
 from routers.health import router as health_router
+from routers.clock import create_clock_router
 
 
 
@@ -137,7 +138,14 @@ def create_app(
         admin_required=admin_required,
     )
 
+    clock_router = create_clock_router(
+        limiter=limiter,
+        get_session=get_session,
+    )
+
     app.include_router(employee_router, prefix="/employees")
+
+    app.include_router(clock_router, prefix="/clock")
 
     app.include_router(health_router)
 

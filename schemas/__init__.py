@@ -1,8 +1,9 @@
 from .input.employee_input import EmployeeInput
 from .input.verify_face_request import VerifyFaceRequest
 from .output.employee_result import EmployeeResult
+from .output.clock_status import ClockStatus
 
-__all__ = ["EmployeeInput", "VerifyFaceRequest", "EmployeeResult"]
+__all__ = ["EmployeeInput", "VerifyFaceRequest", "EmployeeResult", "ClockStatus"]
 """
 Public schema exports for the `schemas` package.
 
@@ -19,4 +20,7 @@ Exposed models:
 
     EmployeeResult:
         Simplified employee representation returned by search endpoints.
+
+    ClockStatus:
+        Current clock-in state for an employee.
 """

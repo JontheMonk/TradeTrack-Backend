@@ -76,7 +76,7 @@ class Employee(Base):
         String(32),
         nullable=False,
         default="employee",
-        doc="Access role (`admin` or `employee`)."
+        doc="Access role (`Admin` or `Employee`)."
     )
 
     created_at = Column(
@@ -96,7 +96,7 @@ class Employee(Base):
 
     __table_args__ = (
         CheckConstraint(
-            "role IN ('admin', 'employee')",
+            "role IN ('Admin', 'Employee')",
             name="employees_role_check"
         ),
     )

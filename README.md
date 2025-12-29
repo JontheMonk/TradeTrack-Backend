@@ -32,14 +32,19 @@ FastAPI backend for TradeTrack, an employee time tracking application with face 
 1. **Start the database:**
   
    docker-compose up -d
-   2. **Create a virtual environment:**
+
+2. **Create a virtual environment:**
  
    python -m venv venv
+
    source venv/bin/activate  # On Windows: venv\Scripts\activate
-   3. **Install dependencies:**
+
+4. **Install dependencies:**
    
    pip install -r requirements.txt
-   4. **Set up environment variables:**
+
+5. **Set up environment variables:**
+
    Create a `.env` file in the root directory:
    
    DATABASE_URL=postgresql://postgres:postgres@localhost:5432/tradetrack_dev
@@ -47,12 +52,14 @@ FastAPI backend for TradeTrack, an employee time tracking application with face 
    ADMIN_API_KEY=your-dev-admin-key-here
 
    ENV=dev
+
    CORS_ORIGINS=*
 
-   5. **Run database migrations:**h
+6. **Run database migrations:**h
+
    alembic upgrade head
 
-   6. **Start the server:**
+7. **Start the server:**
    
    uvicorn main:app --reload --host 0.0.0.0 --port 8000
 

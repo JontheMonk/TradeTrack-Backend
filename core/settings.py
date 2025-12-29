@@ -1,5 +1,5 @@
 """
-Application configuration — clean, explicit, and production-safe.
+Application configuration
 
 This module provides a single `Settings` object used by the entire backend.
 Configuration values are loaded in this order (pydantic-settings v2 behavior):
@@ -52,6 +52,11 @@ class Settings(BaseSettings):
     # ------------------------------------------------------------------
     face_match_threshold: float = 0.5
     embedding_dim: int = 512
+
+    # CORS configuration
+    # In development: "*" (allow all)
+    # In production: comma-separated list like "https://app.example.com,https://admin.example.com"
+    cors_origins: str = "*"
 
     # ------------------------------------------------------------------
     # Settings behavior (Pydantic v2)

@@ -27,14 +27,14 @@ def register_employee(employee: EmployeeInput, db: Session) -> EmployeeResult:
     # Prepare payload
     payload = employee.model_copy(update={
         "embedding": normalized.tolist(),
-        "role": employee.role or "employee"
+        "role": employee.role or "Employee"
     }).model_dump()
 
     log.info(
         "employee_register_prepared_payload",
         employee_id=payload["employee_id"],
         role=payload["role"],
-        embedding_normalized=True,  # safe boolean info, no vectors logged
+        embedding_normalized=True,
     )
 
     # Persist via repository layer

@@ -18,7 +18,7 @@ class EmployeeResult(BaseModel):
             Human-readable display name.
 
         role (str):
-            The user’s authorization role (e.g., "admin" or "employee").
+            The user’s authorization role (e.g., "Admin" or "Employee").
             Returned as a plain string for convenience in frontend handling.
     """
 

@@ -33,7 +33,7 @@ def db():
 
 
 
-def make_emp(employee_id="abc123", name="Alice", role="employee", embedding=None):
+def make_emp(employee_id="abc123", name="Alice", role="Employee", embedding=None):
     """Helper payload factory."""
     return {
         "employee_id": employee_id,
@@ -123,11 +123,11 @@ def test_update_employee_changes_fields(db):
         db,
         payload["employee_id"],
         name="NewName",
-        role="admin"
+        role="Admin"
     )
 
     assert updated.name == "NewName"
-    assert updated.role == "admin"
+    assert updated.role == "Admin"
 
 
 def test_update_employee_not_found(db):

@@ -19,14 +19,11 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade():
-    # 1. Drop constraint FIRST
     op.drop_constraint('employees_role_check', 'employees', type_='check')
     
-    # 2. Now update data (no constraint blocking us)
     op.execute("UPDATE employees SET role = 'Admin' WHERE role = 'admin'")
     op.execute("UPDATE employees SET role = 'Employee' WHERE role = 'employee'")
     
-    # 3. Add new constraint
     op.create_check_constraint(
         'employees_role_check',
         'employees',

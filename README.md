@@ -53,8 +53,6 @@ FastAPI backend for TradeTrack, an employee time tracking application with face 
 
    ENV=dev
 
-   CORS_ORIGINS=*
-
 6. **Run database migrations:**
 
    alembic upgrade head

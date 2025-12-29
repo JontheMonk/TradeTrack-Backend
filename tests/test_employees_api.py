@@ -24,7 +24,7 @@ def test_add_employee_success(make_client):
     payload = {
         "employee_id": "abc123",
         "name": "Alice",
-        "role": "employee",
+        "role": "Employee",
         "embedding": [0.1] * 512,
     }
 
@@ -45,7 +45,7 @@ def test_add_employee_duplicate_id_returns_error(make_client):
     payload = {
         "employee_id": "dup",
         "name": "Bob",
-        "role": "employee",
+        "role": "Employee",
         "embedding": [0.1] * 512,
     }
 
@@ -69,7 +69,7 @@ def test_add_employee_missing_admin_key_returns_401(make_client):
     payload = {
         "employee_id": "noadmin",
         "name": "Charlie",
-        "role": "employee",
+        "role": "Employee",
         "embedding": [0.1] * 512,
     }
 
@@ -85,7 +85,7 @@ def test_add_employee_invalid_admin_key(make_client):
     payload = {
         "employee_id": "badkey",
         "name": "Dana",
-        "role": "employee",
+        "role": "Employee",
         "embedding": [0.1] * 512,
     }
 
@@ -101,7 +101,7 @@ def test_add_employee_invalid_payload_schema(make_client):
     bad_payload = {
         "employee_id": "abc",
         "name": "Alice",
-        "role": "employee",
+        "role": "Employee",
         "embedding": "not-a-list",
     }
 
@@ -118,9 +118,9 @@ def test_search_employees(make_client):
     client = make_client()
 
     employees = [
-        {"employee_id": "alice1", "name": "Alice",   "role": "employee", "embedding": [0.1] * 512},
-        {"employee_id": "alice2", "name": "Alicia",  "role": "employee", "embedding": [0.1] * 512},
-        {"employee_id": "bob1",   "name": "Bob",     "role": "employee", "embedding": [0.1] * 512},
+        {"employee_id": "alice1", "name": "Alice",   "role": "Employee", "embedding": [0.1] * 512},
+        {"employee_id": "alice2", "name": "Alicia",  "role": "Employee", "embedding": [0.1] * 512},
+        {"employee_id": "bob1",   "name": "Bob",     "role": "Employee", "embedding": [0.1] * 512},
     ]
 
     for emp in employees:
@@ -166,7 +166,7 @@ def test_verify_face_success(make_client):
     payload = {
         "employee_id": "emp1",
         "name": "Alice",
-        "role": "employee",
+        "role": "Employee",
         "embedding": [0.0] * 511 + [1.0],
     }
     client.post("/employees/", json=payload,
@@ -190,7 +190,7 @@ def test_verify_face_low_confidence_failure(make_client):
     payload = {
         "employee_id": "emp2",
         "name": "Bob",
-        "role": "employee",
+        "role": "Employee",
         "embedding": [1.0] + [0.0] * 511,
     }
     client.post("/employees/", json=payload,

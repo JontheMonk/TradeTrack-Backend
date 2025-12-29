@@ -75,7 +75,7 @@ class Employee(Base):
     role = Column(
         String(32),
         nullable=False,
-        default="employee",
+        default="Employee",
         doc="Access role (`Admin` or `Employee`)."
     )
 

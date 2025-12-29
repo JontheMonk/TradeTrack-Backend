@@ -15,12 +15,12 @@ def test_search_employees_by_prefix(monkeypatch):
     mock_emp1 = MagicMock()
     mock_emp1.employee_id = "123"
     mock_emp1.name = "Jon"
-    mock_emp1.role = "employee"
+    mock_emp1.role = "Employee"
 
     mock_emp2 = MagicMock()
     mock_emp2.employee_id = "124"
     mock_emp2.name = "Johnny"
-    mock_emp2.role = "admin"
+    mock_emp2.role = "Admin"
 
     fake_results = [mock_emp1, mock_emp2]
 
@@ -52,11 +52,11 @@ def test_search_employees_by_prefix(monkeypatch):
     # Correct transformation
     assert result[0].employee_id == "123"
     assert result[0].name == "Jon"
-    assert result[0].role == "employee"
+    assert result[0].role == "Employee"
 
     assert result[1].employee_id == "124"
     assert result[1].name == "Johnny"
-    assert result[1].role == "admin"
+    assert result[1].role == "Admin"
 
     # Ensure returned objects are NOT the ORM objects
     assert result[0] is not mock_emp1
@@ -64,9 +64,9 @@ def test_search_employees_by_prefix(monkeypatch):
 
     # Ensure we didn't mutate mock ORM objects
     assert mock_emp1.name == "Jon"
-    assert mock_emp1.role == "employee"
+    assert mock_emp1.role == "Employee"
     assert mock_emp2.name == "Johnny"
-    assert mock_emp2.role == "admin"
+    assert mock_emp2.role == "Admin"
 
 
 
@@ -105,7 +105,7 @@ def test_search_employees_by_prefix_extra_fields_ignored(monkeypatch):
     mock_emp = MagicMock()
     mock_emp.employee_id = "999"
     mock_emp.name = "Alice"
-    mock_emp.role = "employee"
+    mock_emp.role = "Employee"
     mock_emp.secret_token = "DO_NOT_LEAK"  # Repo might have extra columns
 
     def mock_get(_, __):

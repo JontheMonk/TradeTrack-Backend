@@ -99,13 +99,18 @@ def create_app(
     # -----------------------------------------------------------------------
     # CORS middleware
     #
-    # Currently wide-open for development. In production, restrict origins.
     # -----------------------------------------------------------------------
+    cors_origins_list = (
+        settings.cors_origins.split(",") 
+        if settings.cors_origins != "*" 
+        else ["*"]
+    )
+    
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
-        allow_methods=["*"],
-        allow_headers=["*"],
+        allow_origins=cors_origins_list,
+        allow_methods=["GET", "POST"],
+        allow_headers=["Content-Type", "X-Admin-Key"],
     )
 
     # -----------------------------------------------------------------------

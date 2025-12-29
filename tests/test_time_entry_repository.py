@@ -35,7 +35,7 @@ def employee(db):
     emp = Employee(
         employee_id="emp123",
         name="Test Worker",
-        role="employee",
+        role="Employee",
         embedding=[0.1] * 512,
     )
     db.add(emp)

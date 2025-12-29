@@ -43,21 +43,18 @@ FastAPI backend for TradeTrack, an employee time tracking application with face 
    Create a `.env` file in the root directory:
    
    DATABASE_URL=postgresql://postgres:postgres@localhost:5432/tradetrack_dev
+
    ADMIN_API_KEY=your-dev-admin-key-here
+
    ENV=dev
    CORS_ORIGINS=*
+
    5. **Run database migrations:**h
    alembic upgrade head
+
    6. **Start the server:**
    
    uvicorn main:app --reload --host 0.0.0.0 --port 8000
-   The API will be available at `http://localhost:8000`
-
-### API Documentation
-
-Once the server is running, visit:
-- **Swagger UI**: `http://localhost:8000/docs`
-- **ReDoc**: `http://localhost:8000/redoc`
 
 ## Environment Variables
 

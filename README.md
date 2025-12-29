@@ -47,7 +47,7 @@ FastAPI backend for TradeTrack, an employee time tracking application with face 
 
    Create a `.env` file in the root directory:
    
-   DATABASE_URL=postgresql://postgres:postgres@localhost:5432/tradetrack_dev
+   DATABASE_URL=your-database-url
 
    ADMIN_API_KEY=your-dev-admin-key-here
 
@@ -55,7 +55,7 @@ FastAPI backend for TradeTrack, an employee time tracking application with face 
 
    CORS_ORIGINS=*
 
-6. **Run database migrations:**h
+6. **Run database migrations:**
 
    alembic upgrade head
 

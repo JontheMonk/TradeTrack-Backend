@@ -92,39 +92,6 @@ FastAPI backend for TradeTrack, an employee time tracking application with face 
 - `POST /clock/{employee_id}/out` - Clock out
 - `GET /clock/{employee_id}/status` - Get current clock status
 
-## Database Migrations
-
-### Create a new migration:
-alembic revision --autogenerate -m "description"### Apply migrations:
-alembic upgrade head### Rollback:
-alembic downgrade -1## Testing
-
-Run the test suite:sh
-pytestRun with coverage:
-pytest --cov=. --cov-report=html## Deployment
-
-### Render.com
-
-1. Connect your GitHub repository
-2. Set environment variables in Render dashboard:
-   - `DATABASE_URL`: Your Supabase PostgreSQL connection string
-   - `ADMIN_API_KEY`: Your admin API key
-   - `ENV=prod`
-   - `CORS_ORIGINS`: Your allowed origins (or `*` for development)
-
-3. Deploy! Render will automatically:
-   - Install dependencies from `requirements.txt`
-   - Run `uvicorn main:app --host=0.0.0.0 --port=10000`
-
-### Database Setup (Supabase)
-
-1. Create a PostgreSQL database on Supabase
-2. Enable the pgvector extension:
-   
-   CREATE EXTENSION IF NOT EXISTS vector;
-   3. Run migrations:
-   alembic upgrade head
-   ## Development
 
 ### Code Style
 
